@@ -9,11 +9,21 @@ First of all you will need a new classifier:
 
 (use 'clj_naive_bayes.core)
 
-(def my-classifier (new-classifier :ngram-nb))
+(def my-classifier (new-classifier {:name :ngram-nb :ngram-size 2 :ngram-type :multinomial}))
 
 ```
 
 ## Train
+
+Suppose you have a train dataset.
+
+```clojure
+
+(use 'clj_naive_bayes.train)
+
+(parallel-train-from my-classifier "resources/train.csv" :limit 4000000)
+
+```
 
 ## Evaluate Performance
 
