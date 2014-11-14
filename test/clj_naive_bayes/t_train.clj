@@ -38,7 +38,7 @@
                      ["Chinese Chinese Shanghai" "China"]
                      ["Chinese Macao" "China"]
                      ["Tokyo Japan Chinese" "Japan"]]
-          binary-classifier (clj_naive_bayes.core/new-classifier :binary-nb)]
+          binary-classifier (clj_naive_bayes.core/new-classifier {:name :binary-nb})]
 
       (train binary-classifier documents)
 

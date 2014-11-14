@@ -16,29 +16,28 @@
   (clojure.string/split s #"\s+"))
 
 (defn tokenize-and-set
-  "Tokenize a string and returns a set"
+  "Tokenizes a string and returns a set"
   [s]
   (set (tokenize s)))
 
-(defn greek-books-or-empty-category?
-  [cid]
-  (or (= cid 34) (zero? cid)))
-
 (defn ngram-keys
   "Given an array returns an"
-  [array & {:keys [ngram-size]
-            :or {ngram-size 2}}]
-  (map #(clojure.string/join "_" %) (partition ngram-size 1 array)))
+  [array & {:keys [size]
+            :or {size 2}}]
+  (map #(clojure.string/join "_" %) (partition size 1 array)))
 
 (defn process-features
   [features for-algorithm]
-  (cond
-    (= for-algorithm :multinomial-nb)
-      (map tokenize features)
-    (= for-algorithm :binary-nb)
-      (map #(distinct (tokenize %)) features)
-    (= for-algorithm :ngram-nb)
-      (map #(ngram-keys (tokenize %)) features)))
+  (let [{:keys [name ngram-type ngram-size]
+         :or {ngram-size 2
+              ngram-type :multinomial}} for-algorithm]
+    (cond
+      (= name :multinomial-nb)
+        (map tokenize features)
+      (= name :binary-nb)
+        (map #(distinct (tokenize %)) features)
+      (= name :ngram-nb)
+        (map #(ngram-keys (tokenize %) :size ngram-size) features))))
 
 (defn persist-classifier
   [classifier filename]

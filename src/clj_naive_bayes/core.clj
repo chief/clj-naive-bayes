@@ -6,7 +6,7 @@
 
 (defn new-classifier
   ([]
-   (new-classifier :multinomial-nb))
+   (new-classifier {:name :multinomial-nb}))
   ([algorithm]
     (atom {:all {:tokens {} :n 0 :v 0} :classes {} :algorithm algorithm})))
 
