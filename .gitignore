@@ -1,0 +1,13 @@
+pom.xml
+pom.xml.asc
+*jar
+/lib/
+/classes/
+.lein-deps-sum
+testinfo.clj
+.lein*
+target/
+docs/
+.nrepl-port
+resources/config.edn
+*.log
