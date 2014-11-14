@@ -13,6 +13,18 @@ First of all you will need a new classifier:
 
 ```
 
+### Available options are
+
+* __:name__ : Currently `:ngram-nb`, `:multinomial-nb` and `:binary-nb` are
+  supported. (Default `:multinomial-nb`)
+
+* __:ngram-size:__ : Sets ngram size. (Default 2)
+
+* __:ngram-type:__ : Whether the ngram should be `:binary` or `:multinomial`
+
+* __:boost-start:__ : Boolean. (Default `false`).
+
+
 ## Train
 
 Suppose you have a train dataset.

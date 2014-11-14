@@ -20,24 +20,36 @@
   [s]
   (set (tokenize s)))
 
+(defn add-empty-space-before
+  [array]
+  (conj (apply list array) ""))
+
 (defn ngram-keys
   "Given an array returns an"
-  [array & {:keys [size]
-            :or {size 2}}]
-  (map #(clojure.string/join "_" %) (partition size 1 array)))
+  [array & {:keys [size type boost-start]
+            :or {size 2
+                 type :multinomial
+                 boost-start false}}]
+  (let [processed-array (if (true? boost-start) (add-empty-space-before array) array)
+        ngrams (map #(clojure.string/join "_" %) (partition size 1 processed-array))]
+    (if (= type :binary)
+        (distinct ngrams)
+        ngrams)))
 
 (defn process-features
   [features for-algorithm]
-  (let [{:keys [name ngram-type ngram-size]
+  (let [{:keys [name ngram-type ngram-size boost-start]
          :or {ngram-size 2
-              ngram-type :multinomial}} for-algorithm]
+              ngram-type :multinomial
+              boost-start false}} for-algorithm]
     (cond
       (= name :multinomial-nb)
         (map tokenize features)
       (= name :binary-nb)
         (map #(distinct (tokenize %)) features)
       (= name :ngram-nb)
-        (map #(ngram-keys (tokenize %) :size ngram-size) features))))
+        (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
+                                       :boost-start boost-start) features))))
 
 (defn persist-classifier
   [classifier filename]
