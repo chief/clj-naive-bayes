@@ -54,8 +54,8 @@
 
 (defn parallel-train-from
   [classifier filename & {:keys [limit train-options]
-               :or {limit 100
-                    train-options {:fn (partial take 2)}}}]
+                          :or {limit 100
+                               train-options {:fn (partial take 2)}}}]
   (with-open [in-file (reader filename)]
     (let [with-documents (take limit (csv/read-csv in-file))]
       (dorun
