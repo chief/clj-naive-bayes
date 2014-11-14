@@ -64,4 +64,5 @@
   (use 'clj_naive_bayes.eval :reload-all)
   (use 'clj_naive_bayes.train :reload-all)
   (use 'clojure.tools.namespace.repl)
+  (require 'spyscope.core)
   (require 'clojure.pprint))
