@@ -1,6 +1,5 @@
 # clj-naive-bayes
 
-
 ## Usage
 
 First of all you will need a new classifier:
@@ -18,22 +17,25 @@ First of all you will need a new classifier:
 * __:name__ : Currently `:ngram-nb`, `:multinomial-nb` and `:binary-nb` are
   supported. (Default `:multinomial-nb`)
 
-* __:ngram-size:__ : Sets ngram size. (Default 2)
+* __:ngram-size__ : Sets ngram size. (Default 2)
 
-* __:ngram-type:__ : Whether the ngram should be `:binary` or `:multinomial`
+* __:ngram-type__ : Whether the ngram should be `:binary` or `:multinomial`
 
-* __:boost-start:__ : Boolean. (Default `false`).
+* __:boost-start__ : Boolean. (Default `false`). This flag has only effect
+  with ngrams.
 
+* __:keep-sorted__ : Boolean. (Default `false`). With this flag on all tokens
+  in ngram keys are stores in alphabetical order.
 
 ## Train
 
-Suppose you have a train dataset.
+Suppose you have a trained dataset.
 
 ```clojure
 
 (use 'clj_naive_bayes.train)
 
-(parallel-train-from my-classifier "resources/train.csv" :limit 4000000)
+(parallel-train-from my-classifier "resources/train.csv" :limit 400000 0)
 
 ```
 
@@ -67,10 +69,9 @@ And later on load it:
 
 (use 'clj_naive_bayes.utils)
 
-(load-classifier my-classifier "resources/data.clj")
+  (load-classifier my-classifier "resources/data.clj")
 
 ```
-
 
 ## Tooling
 
