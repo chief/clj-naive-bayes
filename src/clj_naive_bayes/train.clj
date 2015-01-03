@@ -10,11 +10,17 @@
 
   (if (get-in @classifier [:classes klass])
     (swap! classifier update-in [:classes klass :n] inc)
-    (swap! classifier assoc-in [:classes klass :n] 1))
+    (do
+      (swap! classifier assoc-in [:classes klass :n] 1)
+      (swap! classifier assoc-in [:classes klass :st] 0)))
+
 
   (doseq [token v]
     (if (get-in @classifier [:all :tokens token])
-      (swap! classifier update-in [:all :tokens token] inc)
+      (do
+        (swap! classifier update-in [:all :tokens token] inc)
+        (swap! classifier update-in [:all :st] inc)
+        (swap! classifier update-in [:classes klass :st] inc))
       (do
         (swap! classifier update-in [:all :v] inc)
         (swap! classifier assoc-in  [:all :tokens token] 1)))

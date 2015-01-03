@@ -45,7 +45,15 @@
     (process-features ["iphone 6 iphone 6" "mobile phones"]
                       {:name :ngram-nb :ngram-size 2 :ngram-type :binary
                        :boost-start true}) =>
-      [["_iphone" "iphone_6" "6_iphone"] ["_mobile" "mobile_phones"]]))
+      [["_iphone" "iphone_6" "6_iphone"] ["_mobile" "mobile_phones"]])
+
+  (fact "it returns processed features when algorithm is :ngram-nb
+        ngram-size is 2 ngram-type is :binary :boost_start is `true` and
+        :keep-sorted true"
+    (process-features ["iphone 6 iphone 6" "mobile phones"]
+                      {:name :ngram-nb :ngram-size 2 :ngram-type :binary
+                       :boost-start true :keep-sorted true}) =>
+      [["_iphone" "6_iphone"] ["_mobile" "mobile_phones"]]))
 
 
 (facts "about `add-empty-space-before"

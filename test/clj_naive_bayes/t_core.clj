@@ -13,4 +13,5 @@
 
       (train multinomial-classifier documents)
 
-      (classify multinomial-classifier ["Chinese"])) => "China"))
+      (classify multinomial-classifier ["Chinese"]) => "China"
+      (classify multinomial-classifier []) => "China"  )))

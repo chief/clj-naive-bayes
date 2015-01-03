@@ -44,7 +44,35 @@
   given classifier"
   [classifier t c]
   (/ (inc (Tct classifier t c))
-     (+ (memo-sum-of-tokens classifier c) (memo-all-vocabulary classifier))))
+     (+ (Nstc classifier c) (all-vocabulary classifier))))
+
+(defn Nt
+  "Get the occurences of token t in all classes for a given classifier"
+  [classifier t]
+  (get-in @classifier [:all :tokens t] 0))
+
+(defn NCt
+  "Gets the occurences of token t in  all classes except c for a given classifier"
+  [classifier t c]
+  (- (Nt classifier t) (Tct classifier t c)))
+
+(defn Nst
+  "Gets total token occurences for a classifier"
+  [classifier]
+  (get-in @classifier [:all :st] 0))
+
+(defn Nc
+  "Gets total number of word occurrences in classes other than c for a given
+  classifier"
+  [classifier c]
+  (- (Nst classifier) (Nstc classifier c)))
+
+(defn complement-naive-bayes
+  "Calculates the Complement Naive Bayes (CNB) of token t for class c in a
+  given classifier"
+  [classifier t c]
+   (/ (inc (NCt classifier t c))
+     (+ (Nc classifier c) (all-vocabulary classifier))))
 
 (defn classifier-classes
   "Gets all classes for a given classifier"
@@ -54,17 +82,61 @@
 
 (defn apply-nb
   [classifier document]
-  (let [classes (memo-classifier-classes classifier)
+  (let [classes (classifier-classes classifier)
         with-algorithm (@classifier :algorithm)
         tokens (flatten (process-features document with-algorithm))]
     (apply hash-map (flatten (map (fn [klass]
-          [klass (+ (Math/log (memo-prior classifier klass))
+          [klass (+ (Math/log (prior classifier klass))
                     (reduce + (map #(Math/log (condprob classifier % klass)) tokens)))])
+         classes)))))
+
+(defn apply-cnb
+  [classifier document]
+  (let [classes (classifier-classes classifier)
+        with-algorithm (@classifier :algorithm)
+        tokens (flatten (process-features document with-algorithm))]
+    (apply hash-map (flatten (map (fn [klass]
+          [klass (- (Math/log (prior classifier klass))
+                    (reduce + (map
+                                #(Math/log
+                                   (complement-naive-bayes classifier % klass))
+                                tokens)))])
+         classes)))))
+
+(defn apply-one-versus-all-but-one
+  [classifier document]
+  ; (println document)
+  (let [classes (classifier-classes classifier)
+        with-algorithm (@classifier :algorithm)
+        tokens (flatten (process-features document with-algorithm))]
+
+    (apply hash-map (flatten (map (fn [klass]
+          [klass (+ (Math/log (prior classifier klass))
+                    (reduce + (map
+                                #(- (Math/log
+                                      (condprob classifier % klass))
+
+                                    (Math/log
+                                      (complement-naive-bayes classifier % klass))
+
+                                    )
+                              tokens) ))])
          classes)))))
 
 (defn classify
   [classifier document]
   ((first (sort-by val > (apply-nb classifier document))) 0))
+
+(defn classify-cnb
+  [classifier document]
+  ((first (sort-by val > (apply-cnb classifier document))) 0))
+
+(defn classify-one-versus-all-but-one
+  [classifier document]
+  ; (println document)
+  (try
+    ((first (sort-by val > (apply-one-versus-all-but-one classifier document))) 0)
+    (catch Exception e (str "caught exception: " (.getMessage e) " " document))))
 
 (defn debug-classify
   [classifier document]
