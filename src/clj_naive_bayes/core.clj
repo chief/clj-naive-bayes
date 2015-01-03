@@ -8,7 +8,7 @@
   ([]
    (new-classifier {:name :multinomial-nb}))
   ([algorithm]
-    (atom {:all {:tokens {} :n 0 :v 0} :classes {} :algorithm algorithm})))
+    (atom {:all {:tokens {} :n 0 :v 0 :st 0} :classes {} :algorithm algorithm})))
 
 (defmacro with-classifier
   "Executes body using passed classifier"
@@ -28,12 +28,10 @@
   [classifier t c]
   (get-in @classifier [:classes c :tokens t] 0))
 
-(defn sum-of-tokens
-  "Calculates the sum of all tokens frequencies for class c in a given
-  classifier"
+(defn Nstc
+  "Gets total token occurrences for a class c"
   [classifier c]
-  (reduce + (map val (get-in @classifier [:classes c :tokens]))))
-(def memo-sum-of-tokens (memoize sum-of-tokens))
+  (get-in @classifier [:classes c :st] 0))
 
 (defn all-vocabulary
   "Gets all total known vocabulary for a classifier"
