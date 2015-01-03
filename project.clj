@@ -10,4 +10,3 @@
   :jvm-opts ["-Xmx4g"]
   :plugins [[lein-marginalia "0.8.0"]]
   :profiles {:dev {:dependencies [[midje "1.6.3"]]}})
-
