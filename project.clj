@@ -8,5 +8,4 @@
                  [org.clojure/data.csv "0.1.3"]
                  [spyscope "0.1.5"]]
   :jvm-opts ["-Xmx4g"]
-  :plugins [[lein-marginalia "0.8.0"]]
-  :profiles {:dev {:dependencies [[midje "1.8.2"]]}})
+  :plugins [[lein-marginalia "0.8.0"]])

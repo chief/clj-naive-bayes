@@ -73,17 +73,13 @@ And later on load it:
 
 ```
 
+### Testing
+
+`lein test` will run all tests.
+
+`lein test [TEST]` will run only tests in the TESTS namespaces.
+
 ## Tooling
-
-### Midje
-
-`lein midje` will run all tests.
-
-`lein midje namespace.*` will run only tests beginning with "namespace.".
-
-`lein midje :autotest` will run all the tests indefinitely. It sets up a
-watcher on the code files. If they change, only the relevant tests will be
-run again.
 
 ### Kibit
 
@@ -92,4 +88,3 @@ run again.
 ### Marginalia
 
 `lein marg` will produce documentation under `/docs`
-
