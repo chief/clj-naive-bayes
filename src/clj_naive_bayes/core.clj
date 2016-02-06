@@ -21,7 +21,6 @@
   [classifier c]
   (/ (get-in @classifier [:classes c :n] 0)
      (get-in @classifier [:all :n])))
-; (def memo-prior (memoize prior))
 
 (defn Tct
   "Gets the occurences of token t in class c for given classifier"
@@ -37,7 +36,6 @@
   "Gets all total known vocabulary for a classifier"
   [classifier]
   (get-in @classifier [:all :v] 0))
-; (def memo-all-vocabulary (memoize all-vocabulary))
 
 (defn condprob
   "Calculates the conditional propability of token t for class c in a
@@ -78,7 +76,6 @@
   "Gets all classes for a given classifier"
   [classifier]
   (keys (get-in @classifier [:classes])))
-; (def memo-classifier-classes (memoize classifier-classes))
 
 (defn apply-nb
   [classifier document]
@@ -105,7 +102,6 @@
 
 (defn apply-one-versus-all-but-one
   [classifier document]
-  ; (println document)
   (let [classes (classifier-classes classifier)
         with-algorithm (@classifier :algorithm)
         tokens (flatten (process-features document with-algorithm))]
@@ -133,7 +129,6 @@
 
 (defn classify-one-versus-all-but-one
   [classifier document]
-  ; (println document)
   (try
     ((first (sort-by val > (apply-one-versus-all-but-one classifier document))) 0)
     (catch Exception e (str "caught exception: " (.getMessage e) " " document))))
