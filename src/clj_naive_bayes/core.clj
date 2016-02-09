@@ -1,6 +1,7 @@
 (ns clj_naive_bayes.core
   (:use [clj_naive_bayes.utils])
-  (:require [clojure.core.memoize :as memo]))
+  (:require [clojure.core.memoize :as memo]
+            [schema.core :as s]))
 
 (def ^:dynamic classifier nil)
 
