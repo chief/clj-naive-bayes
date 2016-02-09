@@ -15,11 +15,6 @@
   [s]
   (clojure.string/split s #"\s+"))
 
-(defn tokenize-and-set
-  "Tokenizes a string and returns a set"
-  [s]
-  (set (tokenize s)))
-
 (defn add-empty-space-before
   [array]
   (conj (apply list array) ""))
