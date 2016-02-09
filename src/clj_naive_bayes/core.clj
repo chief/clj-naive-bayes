@@ -18,10 +18,12 @@
        ~@body))
 
 (defn Nc
+  "Gets the total documents of class c"
   [classifier c]
   (get-in @classifier [:classes c :n] 0))
 
 (defn N
+  "Gets total documents"
   [classifier]
   (get-in @classifier [:all :n]))
 
