@@ -12,6 +12,9 @@
   (is (= (utils/process-features ["iphone 6" "mobile phones"]
                                  {:name :multinomial-nb})
          [["iphone" "6"] ["mobile" "phones"]]))
+  (is (= (utils/process-features ["Chinese" "mobile phones" "Chinese"]
+                                 {:name :bernoulli})
+         ["Chinese" "mobile" "phones"]))
   (is (= (utils/process-features ["iphone 6 6" "mobile phones"]
                                  {:name :binary-nb})
          [["iphone" "6"] ["mobile" "phones"]]))

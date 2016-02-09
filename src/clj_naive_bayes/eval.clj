@@ -49,7 +49,7 @@
 
 (defn evaluate-current-algorithm
   [against-classifier with-file]
-  (let [x (parallel-classifications)]
+  (let [x (parallel-classifications against-classifier with-file)]
     (count (filter #(= (keyword (str (first %))) (last %)) x))))
 
 (defn evaluate-performance

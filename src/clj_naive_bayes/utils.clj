@@ -8,7 +8,7 @@
   [filename]
   (with-open [in-file (reader filename)]
     (doall
-      (csv/read-csv in-file))))
+     (csv/read-csv in-file))))
 
 (defn tokenize
   "Returns a tokenized string"
@@ -31,7 +31,7 @@
     array))
 
 (defn ngram-keys
-  "Returns ngram keys from an array of tokens."
+  "Returns ngram keys from an array ofπ4τ tokens."
   [array & {:keys [size type boost-start keep-sorted]
             :or {size 2
                  type :multinomial
@@ -40,8 +40,8 @@
   (let [processed-array (if (true? boost-start) (add-empty-space-before array) array)
         ngrams (map #(clojure.string/join "_" (sort-ngrams % keep-sorted)) (partition size 1 processed-array))]
     (if (= type :binary)
-        (distinct ngrams)
-        ngrams)))
+      (distinct ngrams)
+      ngrams)))
 
 (defn process-features
   [features for-algorithm]
@@ -55,10 +55,15 @@
         (map tokenize features)
       (= name :binary-nb)
         (map #(distinct (tokenize %)) features)
+      (= name :bernoulli)
+          (->> features
+              (map tokenize)
+              flatten
+              distinct)
       (= name :ngram-nb)
-        (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
-                                       :boost-start boost-start
-                                       :keep-sorted keep-sorted) features))))
+      (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
+                        :boost-start boost-start
+                        :keep-sorted keep-sorted) features))))
 
 (defn persist-classifier
   [classifier filename]

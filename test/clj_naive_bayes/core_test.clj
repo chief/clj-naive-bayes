@@ -3,13 +3,37 @@
             [clj_naive_bayes.train :as train]
             [clojure.test :refer :all]))
 
-(deftest test-classify
+(deftest test-classify-multinomial
   (let [documents [["Chinese Beijing Chinese" "China"]
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
-        multinomial-classifier (core/new-classifier)]
-    (train/train multinomial-classifier documents)
+        classifier (core/new-classifier)]
+    (train/train classifier documents)
 
-    (is (= (core/classify multinomial-classifier ["Chinese"]) "China"))
-    (is (= (core/classify multinomial-classifier []) "China"))))
+    (is (= (core/condprob classifier "Chinese" "China") 3/7))
+    (is (= (core/condprob classifier "Tokyo" "China") 1/14))
+    (is (= (core/condprob classifier "Japan" "China") 1/14))
+    (is (= (core/condprob classifier "Chinese" "Japan") 2/9))
+    (is (= (core/condprob classifier "Tokyo" "Japan") 2/9))
+    (is (= (core/condprob classifier "Japan" "Japan") 2/9))
+    (is (= (core/B classifier) 6))
+    (is (= (core/classify classifier ["Chinese"]) "China"))
+    (is (= (core/classify classifier []) "China"))))
+
+(deftest test-classify-bernoulli
+  (let [documents [["Chinese Beijing Chinese" "China"]
+                   ["Chinese Chinese Shanghai" "China"]
+                   ["Chinese Macao" "China"]
+                   ["Tokyo Japan Chinese" "Japan"]]
+        classifier (core/new-classifier {:name :bernoulli})]
+    (train/train classifier documents)
+
+    (is (= (core/condprob classifier "Chinese" "China") 4/5))
+    (is (= (core/condprob classifier "Tokyo" "China") 1/5))
+    (is (= (core/condprob classifier "Japan" "China") 1/5))
+    (is (= (core/condprob classifier "Chinese" "Japan") 2/3))
+    (is (= (core/condprob classifier "Tokyo" "Japan") 2/3))
+    (is (= (core/condprob classifier "Japan" "Japan") 2/3))
+    (is (= (core/classify classifier ["Chinese"]) "China"))
+    (is (= (core/classify classifier []) "China"))))

@@ -2,9 +2,14 @@
   (:use [clj_naive_bayes.core]
         [clj_naive_bayes.utils]
         [clojure.java.io :only (reader)])
-  (:require  [clojure.data.csv :as csv]))
+  (:require  [clojure.data.csv :as csv]
+             [schema.core :as s]))
 
-(defn train-document!
+(defmulti train-document
+  "Trains classifier with document"
+  (fn [classifier klass document] (get-in @classifier [:algorithm :name])))
+
+(defmethod train-document :default
   [classifier klass v]
   (swap! classifier update-in [:all :n] inc)
 
@@ -14,7 +19,6 @@
       (swap! classifier assoc-in [:classes klass :n] 1)
       (swap! classifier assoc-in [:classes klass :st] 0)))
 
-
   (doseq [token v]
     (if (get-in @classifier [:all :tokens token])
       (do
@@ -22,6 +26,8 @@
         (swap! classifier update-in [:all :st] inc)
         (swap! classifier update-in [:classes klass :st] inc))
       (do
+        (swap! classifier update-in [:all :st] inc)
+        (swap! classifier update-in [:classes klass :st] inc)
         (swap! classifier update-in [:all :v] inc)
         (swap! classifier assoc-in  [:all :tokens token] 1)))
 
@@ -50,18 +56,12 @@
     (let [klass (target document)
           algorithm (@classifier :algorithm)
           v (flatten (process-features (features document (:fn options)) algorithm))]
-      (train-document! classifier klass v))))
-
-(defn train-from
-  [classifier filename {:keys [limit]
-                        :or {limit 100}}]
-  (let [with-documents (take limit (load-data filename))]
-    (train classifier with-documents)))
+      (train-document classifier klass v))))
 
 (defn parallel-train-from
   [classifier filename & {:keys [limit train-options]
                           :or {limit 100
-                               train-options {:fn (partial take 2)}}}]
+                               train-options {:fn (partial take 4)}}}]
   (with-open [in-file (reader filename)]
     (let [with-documents (take limit (csv/read-csv in-file))]
       (dorun

@@ -22,6 +22,7 @@
 
     (is (= (get-in @multinomial-classifier [:all :n]) 4))
     (is (= (get-in @multinomial-classifier [:all :v]) 6))
+    (is (= (get-in @multinomial-classifier [:all, :st]) 11))
     (is (= (get-in @multinomial-classifier [:all :tokens "Chinese"]) 6))
 
     (is (= (get-in @multinomial-classifier [:classes "China" :n]) 3))

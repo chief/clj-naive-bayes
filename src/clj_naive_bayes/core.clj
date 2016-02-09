@@ -17,41 +17,55 @@
     `(binding [classifier ~classifier]
        ~@body))
 
-(defn prior
-  "Calculates the prior propability of class c for given classifier"
+(defn Nc
   [classifier c]
-  (/ (get-in @classifier [:classes c :n] 0)
-     (get-in @classifier [:all :n])))
+  (get-in @classifier [:classes c :n] 0))
 
-(defn Tct
-  "Gets the occurences of token t in class c for given classifier"
+(defn N
+  [classifier]
+  (get-in @classifier [:all :n]))
+
+(defn prior
+  "Calculates the prior propability of class c"
+  [classifier c]
+  (/ (Nc classifier c) (N classifier)))
+
+(s/defn Tct :- s/Num
+  "The number of occurrences of t in training documents from class c"
   [classifier t c]
   (get-in @classifier [:classes c :tokens t] 0))
 
-(defn Nstc
+(s/defn NTct :- s/Num
   "Gets total token occurrences for a class c"
   [classifier c]
   (get-in @classifier [:classes c :st] 0))
 
-(defn all-vocabulary
-  "Gets all total known vocabulary for a classifier"
+(defn B
+  "or |V| is the number of terms in the vocabulary"
   [classifier]
   (get-in @classifier [:all :v] 0))
 
-(defn condprob
-  "Calculates the conditional propability of token t for class c in a
-  given classifier"
+(defmulti condprob
+  "Calculates the conditional propability of token t for class c"
+  (fn [classifier t c] (get-in @classifier [:algorithm :name])))
+
+(defmethod condprob :default
   [classifier t c]
   (/ (inc (Tct classifier t c))
-     (+ (Nstc classifier c) (all-vocabulary classifier))))
+     (+ (NTct classifier c) (B classifier))))
+
+(defmethod condprob :bernoulli
+  [classifier t c]
+  (/ (inc (Tct classifier t c))
+     (+ (Nc classifier c) 2)))
 
 (defn Nt
-  "Get the occurences of token t in all classes for a given classifier"
+  "Get the occurences of token t in all classes"
   [classifier t]
   (get-in @classifier [:all :tokens t] 0))
 
 (defn NCt
-  "Gets the occurences of token t in  all classes except c for a given classifier"
+  "Gets the occurences of token t in  all classes except c"
   [classifier t c]
   (- (Nt classifier t) (Tct classifier t c)))
 
@@ -60,21 +74,19 @@
   [classifier]
   (get-in @classifier [:all :st] 0))
 
-(defn Nc
-  "Gets total number of word occurrences in classes other than c for a given
-  classifier"
+(defn NC
+  "Gets total number of word occurrences in classes other than c"
   [classifier c]
-  (- (Nst classifier) (Nstc classifier c)))
+  (- (Nst classifier) (NTct classifier c)))
 
 (defn complement-naive-bayes
-  "Calculates the Complement Naive Bayes (CNB) of token t for class c in a
-  given classifier"
+  "Calculates the Complement Naive Bayes (CNB) of token t for class c"
   [classifier t c]
    (/ (inc (NCt classifier t c))
-     (+ (Nc classifier c) (all-vocabulary classifier))))
+     (+ (NC classifier c) (B classifier))))
 
 (defn classifier-classes
-  "Gets all classes for a given classifier"
+  "Gets all classes"
   [classifier]
   (keys (get-in @classifier [:classes])))
 
