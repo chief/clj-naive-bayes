@@ -99,7 +99,7 @@
   [classifier document]
   (let [classes (classifier-classes classifier)
         with-algorithm (:algorithm classifier)
-        tokens (flatten (process-features document with-algorithm))]
+        tokens (flatten (process-features classifier document))]
     (apply hash-map
            (flatten (map (fn [klass]
                            [klass (+ (Math/log (prior classifier klass))
@@ -110,7 +110,7 @@
   [classifier document]
   (let [classes (classifier-classes classifier)
         with-algorithm (:algorithm classifier)
-        tokens (flatten (process-features document with-algorithm))]
+        tokens (flatten (process-features classifier document))]
     (apply hash-map
            (flatten (map (fn [klass]
                            [klass (- (Math/log (prior classifier klass))
@@ -124,7 +124,7 @@
   [classifier document]
   (let [classes (classifier-classes classifier)
         with-algorithm (:algorithm classifier)
-        tokens (flatten (process-features document with-algorithm))]
+        tokens (flatten (process-features classifier document))]
 
     (apply hash-map
            (flatten (map (fn [klass]

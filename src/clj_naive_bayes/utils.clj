@@ -15,50 +15,40 @@
   [s]
   (clojure.string/split s #"\s+"))
 
-(defn add-empty-space-before
-  [array]
-  (conj (apply list array) ""))
-
-(defn sort-ngrams
-  [array flag]
-  (if (true? flag)
-    (sort array)
-    array))
-
 (defn ngram-keys
   "Returns ngram keys from an array ofπ4τ tokens."
-  [array & {:keys [size type boost-start keep-sorted]
+  [array & {:keys [size type]
             :or {size 2
-                 type :multinomial
-                 boost-start false
-                 keep-sorted false}}]
-  (let [processed-array (if (true? boost-start) (add-empty-space-before array) array)
-        ngrams (map #(clojure.string/join "_" (sort-ngrams % keep-sorted)) (partition size 1 processed-array))]
+                 type :multinomial}}]
+  (let [ngrams (map #(clojure.string/join "_" %) (partition size 1 array))]
     (if (= type :binary)
       (distinct ngrams)
       ngrams)))
 
-(defn process-features
-  [features for-algorithm]
-  (let [{:keys [name ngram-type ngram-size boost-start keep-sorted]
-         :or {ngram-size 2
-              ngram-type :multinomial
-              boost-start false
-              keep-sorted false}} for-algorithm]
-    (cond
-      (= name :multinomial-nb)
-        (map tokenize features)
-      (= name :binary-nb)
-        (map #(distinct (tokenize %)) features)
-      (= name :bernoulli)
-          (->> features
-              (map tokenize)
-              flatten
-              distinct)
-      (= name :ngram-nb)
-      (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
-                        :boost-start boost-start
-                        :keep-sorted keep-sorted) features))))
+(defmulti process-features
+  "Process features based on Classifier algorithm"
+  (fn [classifier features] (get-in classifier [:algorithm :name])))
+
+(defmethod process-features :multinomial-nb
+  [classifier features]
+  (map tokenize features))
+
+(defmethod process-features :binary-nb
+  [classifier features]
+  (map #(distinct (tokenize %)) features))
+
+(defmethod process-features :bernoulli
+  [classifier features]
+  (->> features
+       (map tokenize)
+       flatten
+       distinct))
+
+(defmethod process-features :ngram-nb
+  [classifier features]
+  (let [ngram-size (get-in classifier [:algorithm :ngram-size] 2)
+        ngram-type (get-in classifier [:algorithm :ngram-type] :multinomial)]
+    (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type) features)))
 
 (defn persist-classifier
   [classifier filename]

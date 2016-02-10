@@ -58,7 +58,7 @@
   (doseq [document with-documents]
     (let [klass (target document)
           algorithm (:algorithm classifier)
-          v (flatten (process-features (features document (:fn options)) algorithm))]
+          v (flatten (process-features classifier (features document (:fn options))))]
       (train-document classifier klass v))))
 
 (defn parallel-train-from
