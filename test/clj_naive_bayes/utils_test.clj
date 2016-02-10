@@ -6,8 +6,12 @@
 (deftest test-tokenize
   (is (= (utils/tokenize "this is a test") ["this" "is" "a" "test"])))
 
-(deftest test-ngram-keys
-  (is (= (utils/ngram-keys ["iphone" "6" "32"]) ["iphone_6" "6_32"])))
+;; (deftest test-ngram-keys
+;;   (is (= (utils/ngram-keys ["iphone" "6" "33"])
+;;          (lazy-seq (lazy-seq ["iphone_6" "6_33"]))))
+
+;;   (is (= (utils/ngram-keys ["iphone" "6" "32"] :explode-ngrams true)
+;;          (lazy-seq (lazy-seq ["iphone_6" "6_32"]) (lazy-seq ["iphone" "6" "32"])))))
 
 (deftest test-process-features
   (is (= (utils/process-features (core/new-classifier) ["iphone 6" "mobile phones"])

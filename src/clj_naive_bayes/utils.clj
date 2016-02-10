@@ -16,12 +16,19 @@
   [s]
   (clojure.string/split s #"\s+"))
 
+(s/defn build-partitions :- []
+  [array size explode]
+  (if explode
+    (map #(partition % 1 array) (range 1 (inc size)))
+    (partition size 1 array)))
+
 (defn ngram-keys
   "Returns ngram keys from an array ofπ4τ tokens."
-  [array & {:keys [size type]
+  [array & {:keys [size type explode-ngrams]
             :or {size 2
-                 type :multinomial}}]
-  (let [ngrams (map #(clojure.string/join "_" %) (partition size 1 array))]
+                 type :multinomial
+                 explode-ngrams false}}]
+  (let [ngrams (map #(clojure.string/join "_" %) (build-partitions array size explode-ngrams))]
     (if (= type :binary)
       (distinct ngrams)
       ngrams)))
@@ -48,9 +55,11 @@
 (defmethod process-features :ngram-nb
   [classifier features]
   (let [ngram-size (get-in classifier [:algorithm :ngram-size] 2)
-        ngram-type (get-in classifier [:algorithm :ngram-type] :multinomial)]
+        ngram-type (get-in classifier [:algorithm :ngram-type] :multinomial)
+        explode-ngrams (get-in classifier [:algorithm :explode-ngrams] false]
     (->> features
-         (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type)))))
+         (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
+                           :explode-ngrams explode-ngrams)))))
 
 (defn persist-classifier
   [classifier filename]
