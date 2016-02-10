@@ -56,7 +56,7 @@
   [classifier features]
   (let [ngram-size (get-in classifier [:algorithm :ngram-size] 2)
         ngram-type (get-in classifier [:algorithm :ngram-type] :multinomial)
-        explode-ngrams (get-in classifier [:algorithm :explode-ngrams] false]
+        explode-ngrams (get-in classifier [:algorithm :explode-ngrams] false)]
     (->> features
          (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
                            :explode-ngrams explode-ngrams)))))
