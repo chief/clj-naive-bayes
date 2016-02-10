@@ -17,27 +17,30 @@
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
-        multinomial-classifier (core/new-classifier)]
-    (train/train multinomial-classifier documents)
+        multinomial-classifier (core/new-classifier)
+        do-train (train/train multinomial-classifier documents)
+        all (:all multinomial-classifier)
+        classes (:classes multinomial-classifier)]
+    (is (= (get-in @all [:n]) 4))
+    (is (= (get-in @all [:v]) 6))
+    (is (= (get-in @all [:st]) 11))
+    (is (= (get-in @all [:tokens "Chinese"]) 6))
 
-    (is (= (get-in @multinomial-classifier [:all :n]) 4))
-    (is (= (get-in @multinomial-classifier [:all :v]) 6))
-    (is (= (get-in @multinomial-classifier [:all, :st]) 11))
-    (is (= (get-in @multinomial-classifier [:all :tokens "Chinese"]) 6))
-
-    (is (= (get-in @multinomial-classifier [:classes "China" :n]) 3))
-    (is (= (get-in @multinomial-classifier [:classes "China" :tokens "Chinese"]) 5)))
+    (is (= (get-in @classes ["China" :n]) 3))
+    (is (= (get-in @classes ["China" :tokens "Chinese"]) 5)))
 
   (let [documents [["Chinese Beijing Chinese" "China"]
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
-        binary-classifier (core/new-classifier {:name :binary-nb})]
-    (train/train binary-classifier documents)
+        binary-classifier (core/new-classifier {:name :binary-nb})
+        do-train (train/train binary-classifier documents)
+        all (:all binary-classifier)
+        classes (:classes binary-classifier)]
 
-    (is (= (get-in @binary-classifier [:all :n]) 4))
-    (is (= (get-in @binary-classifier [:all :v]) 6))
-    (is (= (get-in @binary-classifier [:all :tokens "Chinese"]) 4))
+    (is (= (get-in @all [:n]) 4))
+    (is (= (get-in @all [:v]) 6))
+    (is (= (get-in @all [:tokens "Chinese"]) 4))
 
-    (is (= (get-in @binary-classifier [:classes "China" :n]) 3))
-    (is (= (get-in @binary-classifier [:classes "China" :tokens "Chinese"]) 3))))
+    (is (= (get-in @classes ["China" :n]) 3))
+    (is (= (get-in @classes ["China" :tokens "Chinese"]) 3))))

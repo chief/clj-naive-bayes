@@ -3,29 +3,32 @@
   (:require [clojure.core.memoize :as memo]
             [schema.core :as s]))
 
-(def ^:dynamic classifier nil)
+(defmacro with-classifier
+  "Executes body using passed classifier"
+  [classifier & body]
+  `(binding [classifier ~classifier]
+     ~@body))
+
+(defrecord Classifier
+    [all
+     classes
+     algorithm])
 
 (defn new-classifier
   ([]
    (new-classifier {:name :multinomial-nb}))
   ([algorithm]
-    (atom {:all {:tokens {} :n 0 :v 0 :st 0} :classes {} :algorithm algorithm})))
-
-(defmacro with-classifier
-  "Executes body using passed classifier"
-  [classifier & body]
-    `(binding [classifier ~classifier]
-       ~@body))
+   (->Classifier (atom {:tokens {} :n 0 :v 0 :st 0}) (atom {})  algorithm)))
 
 (defn Nc
   "Gets the total documents of class c"
   [classifier c]
-  (get-in @classifier [:classes c :n] 0))
+  (get-in @(:classes classifier) [c :n] 0))
 
 (defn N
   "Gets total documents"
   [classifier]
-  (get-in @classifier [:all :n]))
+  (get-in @(:all classifier) [:n]))
 
 (defn prior
   "Calculates the prior propability of class c"
@@ -35,21 +38,21 @@
 (s/defn Tct :- s/Num
   "The number of occurrences of t in training documents from class c"
   [classifier t c]
-  (get-in @classifier [:classes c :tokens t] 0))
+  (get-in @(:classes classifier) [c :tokens t] 0))
 
 (s/defn NTct :- s/Num
   "Gets total token occurrences for a class c"
   [classifier c]
-  (get-in @classifier [:classes c :st] 0))
+  (get-in @(:classes classifier) [c :st] 0))
 
 (s/defn B :- s/Num
   "or |V| is the number of terms in the vocabulary"
   [classifier]
-  (get-in @classifier [:all :v] 0))
+  (get-in @(:all classifier) [:v] 0))
 
 (defmulti condprob
   "Calculates the conditional propability of token t for class c"
-  (fn [classifier t c] (get-in @classifier [:algorithm :name])))
+  (fn [classifier t c] (get-in classifier [:algorithm :name])))
 
 (defmethod condprob :default
   [classifier t c]
@@ -64,7 +67,7 @@
 (s/defn Nt :- s/Num
   "Get the occurences of token t in all classes"
   [classifier t]
-  (get-in @classifier [:all :tokens t] 0))
+  (get-in @(:all classifier) [:tokens t] 0))
 
 (s/defn NCt :- s/Num
   "Gets the occurences of token t in  all classes except c"
@@ -74,7 +77,7 @@
 (s/defn Nst :- s/Num
   "Gets total token occurences for a classifier"
   [classifier]
-  (get-in @classifier [:all :st] 0))
+  (get-in @(:all classifier) [:st] 0))
 
 (s/defn NC :- s/Num
   "Gets total number of token occurrences in classes other than c"
@@ -84,55 +87,58 @@
 (defn complement-naive-bayes
   "Calculates the Complement Naive Bayes (CNB) of token t for class c"
   [classifier t c]
-   (/ (inc (NCt classifier t c))
+  (/ (inc (NCt classifier t c))
      (+ (NC classifier c) (B classifier))))
 
 (defn classifier-classes
   "Gets all classes"
   [classifier]
-  (keys (get-in @classifier [:classes])))
+  (keys @(:classes classifier)))
 
 (defn apply-nb
   [classifier document]
   (let [classes (classifier-classes classifier)
-        with-algorithm (@classifier :algorithm)
+        with-algorithm (:algorithm classifier)
         tokens (flatten (process-features document with-algorithm))]
-    (apply hash-map (flatten (map (fn [klass]
-          [klass (+ (Math/log (prior classifier klass))
-                    (reduce + (map #(Math/log (condprob classifier % klass)) tokens)))])
-         classes)))))
+    (apply hash-map
+           (flatten (map (fn [klass]
+                           [klass (+ (Math/log (prior classifier klass))
+                                     (reduce + (map #(Math/log (condprob classifier % klass)) tokens)))])
+                         classes)))))
 
 (defn apply-cnb
   [classifier document]
   (let [classes (classifier-classes classifier)
-        with-algorithm (@classifier :algorithm)
+        with-algorithm (:algorithm classifier)
         tokens (flatten (process-features document with-algorithm))]
-    (apply hash-map (flatten (map (fn [klass]
-          [klass (- (Math/log (prior classifier klass))
-                    (reduce + (map
-                                #(Math/log
-                                   (complement-naive-bayes classifier % klass))
-                                tokens)))])
-         classes)))))
+    (apply hash-map
+           (flatten (map (fn [klass]
+                           [klass (- (Math/log (prior classifier klass))
+                                     (reduce + (map
+                                                #(Math/log
+                                                  (complement-naive-bayes classifier % klass))
+                                                tokens)))])
+                         classes)))))
 
 (defn apply-one-versus-all-but-one
   [classifier document]
   (let [classes (classifier-classes classifier)
-        with-algorithm (@classifier :algorithm)
+        with-algorithm (:algorithm classifier)
         tokens (flatten (process-features document with-algorithm))]
 
-    (apply hash-map (flatten (map (fn [klass]
-          [klass (+ (Math/log (prior classifier klass))
-                    (reduce + (map
-                                #(- (Math/log
-                                      (condprob classifier % klass))
+    (apply hash-map
+           (flatten (map (fn [klass]
+                           [klass (+ (Math/log (prior classifier klass))
+                                     (reduce + (map
+                                                #(- (Math/log
+                                                     (condprob classifier % klass))
 
-                                    (Math/log
-                                      (complement-naive-bayes classifier % klass))
+                                                    (Math/log
+                                                     (complement-naive-bayes classifier % klass))
 
-                                    )
-                              tokens) ))])
-         classes)))))
+                                                    )
+                                                tokens) ))])
+                         classes)))))
 
 (defn classify
   [classifier document]

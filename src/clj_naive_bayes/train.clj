@@ -7,33 +7,36 @@
 
 (defmulti train-document
   "Trains classifier with document"
-  (fn [classifier klass document] (get-in @classifier [:algorithm :name])))
+  (fn [classifier klass document] (get-in classifier [:algorithm :name])))
 
 (defmethod train-document :default
   [classifier klass v]
-  (swap! classifier update-in [:all :n] inc)
+  (let [all (:all classifier)
+        classes (:classes classifier)]
 
-  (if (get-in @classifier [:classes klass])
-    (swap! classifier update-in [:classes klass :n] inc)
+    (swap! all update-in [:n] inc)
+
+    (if (get-in @classes [klass])
+      (swap! classes update-in [klass :n] inc)
     (do
-      (swap! classifier assoc-in [:classes klass :n] 1)
-      (swap! classifier assoc-in [:classes klass :st] 0)))
+      (swap! classes assoc-in [klass :n] 1)
+      (swap! classes assoc-in [klass :st] 0)))
 
-  (doseq [token v]
-    (if (get-in @classifier [:all :tokens token])
-      (do
-        (swap! classifier update-in [:all :tokens token] inc)
-        (swap! classifier update-in [:all :st] inc)
-        (swap! classifier update-in [:classes klass :st] inc))
-      (do
-        (swap! classifier update-in [:all :st] inc)
-        (swap! classifier update-in [:classes klass :st] inc)
-        (swap! classifier update-in [:all :v] inc)
-        (swap! classifier assoc-in  [:all :tokens token] 1)))
+    (doseq [token v]
+      (if (get-in @all [:tokens token])
+        (do
+          (swap! all update-in [:tokens token] inc)
+          (swap! all update-in [:st] inc)
+          (swap! classes update-in [klass :st] inc))
+        (do
+          (swap! all update-in [:st] inc)
+          (swap! classes update-in [klass :st] inc)
+          (swap! all update-in [:v] inc)
+          (swap! all assoc-in  [:tokens token] 1)))
 
-    (if (get-in @classifier [:classes klass :tokens token])
-      (swap! classifier update-in [:classes klass :tokens token] inc)
-      (swap! classifier assoc-in  [:classes klass :tokens token] 1)) ))
+      (if (get-in @classes [klass :tokens token])
+        (swap! classes update-in [klass :tokens token] inc)
+        (swap! classes assoc-in  [klass :tokens token] 1)))))
 
 (defn target
   "Returns a target from a trained document. This documents should have its
@@ -54,7 +57,7 @@
                                 :or {options {:fn (partial take 3)}}}]
   (doseq [document with-documents]
     (let [klass (target document)
-          algorithm (@classifier :algorithm)
+          algorithm (:algorithm classifier)
           v (flatten (process-features (features document (:fn options)) algorithm))]
       (train-document classifier klass v))))
 
