@@ -9,10 +9,10 @@
   `(binding [classifier ~classifier]
      ~@body))
 
-(defrecord Classifier
-    [all
-     classes
-     algorithm])
+(s/defrecord Classifier
+    [all :- s/atom
+     classes :- s/atom
+     algorithm :- {}])
 
 (defn new-classifier
   ([]
