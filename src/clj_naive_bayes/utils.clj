@@ -23,7 +23,7 @@
     (partition size 1 array)))
 
 (defn ngram-keys
-  "Returns ngram keys from an array ofπ4τ tokens."
+  "Returns ngram keys from an array of tokens."
   [array & {:keys [size type explode-ngrams]
             :or {size 2
                  type :multinomial
