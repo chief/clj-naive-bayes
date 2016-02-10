@@ -2,7 +2,8 @@
   (:use [clojure.java.io :only (reader)])
   (:require [cheshire.core :refer :all]
             [clojure.data.csv :as csv]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [schema.core :as s]))
 
 (defn load-data
   [filename]
@@ -29,7 +30,7 @@
   "Process features based on Classifier algorithm"
   (fn [classifier features] (get-in classifier [:algorithm :name])))
 
-(defmethod process-features :multinomial-nb
+(s/defmethod process-features :multinomial-nb :- []
   [classifier features]
   (map tokenize features))
 
@@ -48,7 +49,8 @@
   [classifier features]
   (let [ngram-size (get-in classifier [:algorithm :ngram-size] 2)
         ngram-type (get-in classifier [:algorithm :ngram-type] :multinomial)]
-    (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type) features)))
+    (->> features
+         (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type)))))
 
 (defn persist-classifier
   [classifier filename]
