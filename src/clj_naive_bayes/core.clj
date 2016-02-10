@@ -42,7 +42,7 @@
   [classifier c]
   (get-in @classifier [:classes c :st] 0))
 
-(defn B
+(s/defn B :- s/Num
   "or |V| is the number of terms in the vocabulary"
   [classifier]
   (get-in @classifier [:all :v] 0))
@@ -61,23 +61,23 @@
   (/ (inc (Tct classifier t c))
      (+ (Nc classifier c) 2)))
 
-(defn Nt
+(s/defn Nt :- s/Num
   "Get the occurences of token t in all classes"
   [classifier t]
   (get-in @classifier [:all :tokens t] 0))
 
-(defn NCt
+(s/defn NCt :- s/Num
   "Gets the occurences of token t in  all classes except c"
   [classifier t c]
   (- (Nt classifier t) (Tct classifier t c)))
 
-(defn Nst
+(s/defn Nst :- s/Num
   "Gets total token occurences for a classifier"
   [classifier]
   (get-in @classifier [:all :st] 0))
 
-(defn NC
-  "Gets total number of word occurrences in classes other than c"
+(s/defn NC :- s/Num
+  "Gets total number of token occurrences in classes other than c"
   [classifier c]
   (- (Nst classifier) (NTct classifier c)))
 
