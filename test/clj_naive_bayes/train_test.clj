@@ -1,4 +1,4 @@
-(ns clj-naive-bayes.train-test
+(ns clj_naive_bayes.train-test
   (:require [clj_naive_bayes.train :as train]
             [clj_naive_bayes.core :as core]
             [clojure.test :refer :all]))
