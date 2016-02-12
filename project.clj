@@ -3,7 +3,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [cheshire "5.5.0"]
                  [org.clojure/core.memoize "0.5.8"]
-                 [org.clojure/tools.namespace "0.2.10"]
+                 [org.clojure/tools.namespace "0.2.11"]
                  [com.stuartsierra/component "0.3.1"]
                  [org.clojure/data.csv "0.1.3"]
                  [spyscope "0.1.5"]
