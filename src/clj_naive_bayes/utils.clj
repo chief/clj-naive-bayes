@@ -15,7 +15,6 @@
   "Returns a tokenized string"
   [s]
   (clojure.string/split s #"\s+"))
-
 (s/defn build-partitions :- []
   [array size explode]
   (if explode

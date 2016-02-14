@@ -12,13 +12,15 @@
 (s/defrecord Classifier
     [all :- s/atom
      classes :- s/atom
-     algorithm :- {}])
+     algorithm :- {}
+     tokens :- s/atom])
 
 (defn new-classifier
   ([]
    (new-classifier {:name :multinomial-nb}))
   ([algorithm]
-   (->Classifier (atom {:tokens {} :n 0 :v 0 :st 0}) (atom {})  algorithm)))
+   (->Classifier (atom {:n 0 :v 0 :st 0}) (atom {})  algorithm
+                 (atom {}))))
 
 (defn Nc
   "Gets the total documents of class c"
@@ -38,7 +40,7 @@
 (s/defn Tct :- s/Num
   "The number of occurrences of t in training documents from class c"
   [classifier t c]
-  (get-in @(:classes classifier) [c :tokens t] 0))
+  (get-in @(:tokens classifier) [t c] 0))
 
 (s/defn NTct :- s/Num
   "Gets total token occurrences for a class c"
@@ -67,7 +69,7 @@
 (s/defn Nt :- s/Num
   "Get the occurences of token t in all classes"
   [classifier t]
-  (get-in @(:all classifier) [:tokens t] 0))
+  (get-in @(:tokens classifier) [t :all] 0))
 
 (s/defn NCt :- s/Num
   "Gets the occurences of token t in  all classes except c"
@@ -99,7 +101,7 @@
   [classifier document]
   (let [classes (classifier-classes classifier)
         with-algorithm (:algorithm classifier)
-        tokens (flatten (process-features classifier document))]
+        tokens (flatten (clj_naive_bayes.utils/process-features classifier document))]
     (apply hash-map
            (flatten (map (fn [klass]
                            [klass (+ (Math/log (prior classifier klass))
@@ -110,7 +112,7 @@
   [classifier document]
   (let [classes (classifier-classes classifier)
         with-algorithm (:algorithm classifier)
-        tokens (flatten (process-features classifier document))]
+        tokens (flatten (clj_naive_bayes.utils/process-features classifier document))]
     (apply hash-map
            (flatten (map (fn [klass]
                            [klass (- (Math/log (prior classifier klass))
@@ -124,7 +126,7 @@
   [classifier document]
   (let [classes (classifier-classes classifier)
         with-algorithm (:algorithm classifier)
-        tokens (flatten (process-features classifier document))]
+        tokens (flatten (clj_naive_bayes.utils/process-features classifier document))]
 
     (apply hash-map
            (flatten (map (fn [klass]

@@ -12,31 +12,32 @@
 (defmethod train-document :default
   [classifier klass v]
   (let [all (:all classifier)
-        classes (:classes classifier)]
+        classes (:classes classifier)
+        tokens (:tokens classifier)]
 
     (swap! all update-in [:n] inc)
 
     (if (get-in @classes [klass])
       (swap! classes update-in [klass :n] inc)
-    (do
-      (swap! classes assoc-in [klass :n] 1)
-      (swap! classes assoc-in [klass :st] 0)))
+      (do
+        (swap! classes assoc-in [klass :n] 1)
+        (swap! classes assoc-in [klass :st] 0)))
 
     (doseq [token v]
-      (if (get-in @all [:tokens token])
+      (if (get @tokens token)
         (do
-          (swap! all update-in [:tokens token] inc)
+          (swap! tokens update-in [token :all] inc)
           (swap! all update-in [:st] inc)
           (swap! classes update-in [klass :st] inc))
         (do
           (swap! all update-in [:st] inc)
           (swap! classes update-in [klass :st] inc)
           (swap! all update-in [:v] inc)
-          (swap! all assoc-in  [:tokens token] 1)))
+          (swap! tokens assoc-in  [token :all] 1)))
 
-      (if (get-in @classes [klass :tokens token])
-        (swap! classes update-in [klass :tokens token] inc)
-        (swap! classes assoc-in  [klass :tokens token] 1)))))
+      (if (get-in @tokens [token klass])
+        (swap! tokens update-in [token klass] inc)
+        (swap! tokens assoc-in [token  klass] 1)))))
 
 (defn target
   "Returns a target from a trained document. This documents should have its
@@ -68,4 +69,4 @@
   (with-open [in-file (reader filename)]
     (let [with-documents (take limit (csv/read-csv in-file))]
       (dorun
-        (pmap #(train classifier [%] :options train-options) with-documents)))))
+       (pmap #(train classifier [%] :options train-options) with-documents)))))
