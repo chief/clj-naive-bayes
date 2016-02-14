@@ -9,8 +9,7 @@
   (is (= (train/target document) "40")))
 
 (deftest test-features
-  (is (= (train/features document) ["iphone 6" "mobile phones" ""]))
-  (is (= (train/features document (partial take 1)) ["iphone 6"])))
+  (is (= (train/features document) ["iphone 6" "mobile phones" ""])))
 
 (deftest test-train
   (let [documents [["Chinese Beijing Chinese" "China"]
