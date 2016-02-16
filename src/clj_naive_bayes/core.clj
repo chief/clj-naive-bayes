@@ -1,7 +1,6 @@
 (ns clj_naive_bayes.core
-  (:use [clj_naive_bayes.utils])
-  (:require [clojure.core.memoize :as memo]
-            [schema.core :as s]))
+  (:require [schema.core :as s]
+            [clj_naive_bayes.utils :as utils]))
 
 (defmacro with-classifier
   "Executes body using passed classifier"
