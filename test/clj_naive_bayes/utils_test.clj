@@ -15,7 +15,7 @@
 
 (deftest test-process-features
   (is (= (utils/process-features (core/new-classifier) ["iphone 6" "mobile phones"])
-         [["iphone" "6"] ["mobile" "phones"]]))
+         ["iphone" "6" "mobile" "phones"]))
 
   (is (= (utils/process-features (core/new-classifier {:name :bernoulli})
                                  ["Chinese" "mobile phones" "Chinese"])
@@ -23,7 +23,7 @@
 
   (is (= (utils/process-features (core/new-classifier {:name :binary-nb})
                                  ["iphone 6 6" "mobile phones"])
-         [["iphone" "6"] ["mobile" "phones"]]))
+         ["iphone" "6" "mobile" "phones"]))
 
   (is (= (utils/process-features (core/new-classifier {:name :ngram-nb})
                                  ["iphone 6 32" "mobile phones κινητα"])
@@ -36,9 +36,15 @@
 
   (is (= (utils/process-features (core/new-classifier {:name :ngram-nb
                                                        :ngram-size 2
+
                                                        :ngram-type :multinomial})
                                  ["iphone 6 iphone 6" "mobile phones"])
          [["iphone_6" "6_iphone" "iphone_6"] ["mobile_phones"]]))
+
+  (is (=  (first (utils/process-features
+                  (core/new-classifier {:name :multinomial-positional-nb})
+                  ["apple iphone 32 GB" "phones"]))
+         ["apple" 0]))
 
   (is (= (utils/process-features (core/new-classifier {:name :ngram-nb
                                                        :ngram-size 2

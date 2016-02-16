@@ -14,28 +14,6 @@
                      (classify classifier (vals (select-keys % fields))))
        (take limit logs)))))
 
-(defn parallel-classifications-cnb
-  [classifier with-file & {:keys [fields limit]
-                 :or {fields ["item" "shopcategory"]
-                      limit 100}}]
-  (let [logs (parsed-seq (reader with-file))]
-    (dosync
-      (pmap #(vector (% "actual_prediction")
-                     (vals (select-keys % fields))
-                     (classify-cnb classifier (vals (select-keys % fields))))
-       (take limit logs)))))
-
-(defn parallel-classifications-ovabo
-  [classifier with-file & {:keys [fields limit]
-                 :or {fields ["item" "shopcategory"]
-                      limit 100}}]
-  (let [logs (parsed-seq (reader with-file))]
-    (dosync
-      (pmap #(vector (% "actual_prediction")
-                     (vals (select-keys % fields))
-                     (classify-one-versus-all-but-one classifier (vals (select-keys % fields))))
-       (take limit logs)))))
-
 (defn parallel-classifications-v2
   [classifier with-file & {:keys [fields limit]
                  :or {fields ["item" "shopcategory"]

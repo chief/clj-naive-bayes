@@ -37,3 +37,12 @@
     (is (= (core/condprob classifier "Japan" "Japan") 2/3))
     (is (= (core/classify classifier ["Chinese"]) "China"))
     (is (= (core/classify classifier []) "China"))))
+
+(deftest test-naive-bayes
+  (let [documents [["Chinese Beijing Chinese" "China"]
+                   ["Chinese Chinese Shanghai" "China"]
+                   ["Chinese Macao" "China"]
+                   ["Tokyo Japan Chinese" "Japan"]]
+        classifier (core/new-classifier {:name :multinomial-nb})]
+    (train/train classifier documents)
+    (is (= (core/score classifier ["Chinese"] "China") -1.1349799328389845))))

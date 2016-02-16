@@ -33,6 +33,23 @@
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
+        classifier (core/new-classifier {:name :multinomial-positional-nb})
+        do-train (train/train classifier documents)
+        all (:all classifier)
+        tokens (:tokens classifier)
+        classes (:classes classifier)]
+    (is (= (get-in @all [:n]) 4))
+    (is (= (get-in @all [:v]) 6))
+    (is (= 4 (get-in @all [:st 0])))
+    (is (= (get-in @tokens ["Chinese" :all 0]) 3))
+    (is (= ["Chinese" "Beijing" "Shanghai" "Macao" "Tokyo" "Japan"] (keys @tokens)))
+    (is (= (get-in @classes ["China" :n]) 3))
+    (is (= (get-in @tokens ["Chinese" "China" 1]) 1)))
+
+  (let [documents [["Chinese Beijing Chinese" "China"]
+                   ["Chinese Chinese Shanghai" "China"]
+                   ["Chinese Macao" "China"]
+                   ["Tokyo Japan Chinese" "Japan"]]
         classifier (core/new-classifier {:name :binary-nb})
         do-train (train/train classifier documents)
         all (:all classifier)

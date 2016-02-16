@@ -12,22 +12,23 @@
     [all :- s/atom
      classes :- s/atom
      algorithm :- {}
-     tokens :- s/atom])
+     tokens :- s/atom
+     score :- s/atom])
 
 (defn new-classifier
   ([]
    (new-classifier {:name :multinomial-nb}))
   ([algorithm]
-   (->Classifier (atom {:n 0 :v 0 :st 0}) (atom {})  algorithm
-                 (atom {}))))
+   (->Classifier (atom {:n 0 :v 0}) (atom {})  algorithm
+                 (atom {}) (atom :naive-bayes))))
 
 (defn Nc
-  "Gets the total documents of class c"
+  "Gets total documents of class c"
   [classifier c]
   (get-in @(:classes classifier) [c :n] 0))
 
 (defn N
-  "Gets total documents"
+  "Gets total documents for all classes"
   [classifier]
   (get-in @(:all classifier) [:n]))
 
@@ -66,12 +67,12 @@
      (+ (Nc classifier c) 2)))
 
 (s/defn Nt :- s/Num
-  "Get the occurences of token t in all classes"
+  "Gets the occurences of token t in all classes"
   [classifier t]
   (get-in @(:tokens classifier) [t :all] 0))
 
 (s/defn NCt :- s/Num
-  "Gets the occurences of token t in  all classes except c"
+  "Gets the occurences of token t in all classes except c"
   [classifier t c]
   (- (Nt classifier t) (Tct classifier t c)))
 
@@ -85,8 +86,8 @@
   [classifier c]
   (- (Nst classifier) (NTct classifier c)))
 
-(defn complement-naive-bayes
-  "Calculates the Complement Naive Bayes (CNB) of token t for class c"
+(defn cnb-condprob
+  "Calculates the Complement Naive Bayes (CNB) condprob of token t for class c"
   [classifier t c]
   (/ (inc (NCt classifier t c))
      (+ (NC classifier c) (B classifier))))
@@ -96,64 +97,35 @@
   [classifier]
   (keys @(:classes classifier)))
 
+(defmulti score
+  (fn [classifier tokens klass] @(get classifier :score)))
+
+(defmethod score :default
+  [classifier tokens klass]
+  (+  (Math/log (prior classifier klass))
+      (reduce + (map #(Math/log (condprob classifier % klass)) tokens))))
+
+(defmethod score :complement-naive-bayes
+  [classifier tokens klass]
+  (- (Math/log (prior classifier klass))
+     (reduce + (map  #(Math/log (cnb-condprob classifier % klass)) tokens))))
+
+(defmethod score :one-versus-all-but-one
+  [classifier tokens klass]
+  (+ (Math/log (prior classifier klass))
+     (reduce + (map
+                #(- (Math/log (condprob classifier % klass))
+                    (Math/log (cnb-condprob classifier % klass))) tokens))))
+
 (defn apply-nb
   [classifier document]
   (let [classes (classifier-classes classifier)
-        with-algorithm (:algorithm classifier)
-        tokens (flatten (clj_naive_bayes.utils/process-features classifier document))]
-    (apply hash-map
-           (flatten (map (fn [klass]
-                           [klass (+ (Math/log (prior classifier klass))
-                                     (reduce + (map #(Math/log (condprob classifier % klass)) tokens)))])
-                         classes)))))
-
-(defn apply-cnb
-  [classifier document]
-  (let [classes (classifier-classes classifier)
-        with-algorithm (:algorithm classifier)
-        tokens (flatten (clj_naive_bayes.utils/process-features classifier document))]
-    (apply hash-map
-           (flatten (map (fn [klass]
-                           [klass (- (Math/log (prior classifier klass))
-                                     (reduce + (map
-                                                #(Math/log
-                                                  (complement-naive-bayes classifier % klass))
-                                                tokens)))])
-                         classes)))))
-
-(defn apply-one-versus-all-but-one
-  [classifier document]
-  (let [classes (classifier-classes classifier)
-        with-algorithm (:algorithm classifier)
-        tokens (flatten (clj_naive_bayes.utils/process-features classifier document))]
-
-    (apply hash-map
-           (flatten (map (fn [klass]
-                           [klass (+ (Math/log (prior classifier klass))
-                                     (reduce + (map
-                                                #(- (Math/log
-                                                     (condprob classifier % klass))
-
-                                                    (Math/log
-                                                     (complement-naive-bayes classifier % klass))
-
-                                                    )
-                                                tokens) ))])
-                         classes)))))
+        tokens (utils/process-features classifier document)]
+    (reduce into {} (map #(hash-map % (score classifier tokens %)) classes))))
 
 (defn classify
   [classifier document]
   ((first (sort-by val > (apply-nb classifier document))) 0))
-
-(defn classify-cnb
-  [classifier document]
-  ((first (sort-by val > (apply-cnb classifier document))) 0))
-
-(defn classify-one-versus-all-but-one
-  [classifier document]
-  (try
-    ((first (sort-by val > (apply-one-versus-all-but-one classifier document))) 0)
-    (catch Exception e (str "caught exception: " (.getMessage e) " " document))))
 
 (defn debug-classify
   [classifier document]

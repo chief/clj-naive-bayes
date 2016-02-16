@@ -15,6 +15,7 @@
   "Returns a tokenized string"
   [s]
   (clojure.string/split s #"\s+"))
+
 (s/defn build-partitions :- []
   [array size explode]
   (if explode
@@ -38,11 +39,15 @@
 
 (s/defmethod process-features :multinomial-nb :- []
   [classifier features]
-  (map tokenize features))
+  (flatten (map tokenize features)))
+
+(s/defmethod process-features :multinomial-positional-nb
+  [classifier features]
+  (map-indexed (fn [idx itm] [itm idx]) (flatten (map tokenize features))))
 
 (defmethod process-features :binary-nb
   [classifier features]
-  (map #(distinct (tokenize %)) features))
+  (flatten (map #(distinct (tokenize %)) features)))
 
 (defmethod process-features :bernoulli
   [classifier features]
