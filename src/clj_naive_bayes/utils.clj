@@ -1,8 +1,9 @@
-(ns clj_naive_bayes.utils
+(ns clj-naive-bayes.utils
   (:use [clojure.java.io :only (reader)])
   (:require [cheshire.core :refer :all]
             [clojure.data.csv :as csv]
             [clojure.edn :as edn]
+            [clojure.string :as string]
             [schema.core :as s]))
 
 (defn load-data
@@ -14,7 +15,8 @@
 (defn tokenize
   "Returns a tokenized string"
   [s]
-  (clojure.string/split s #"\s+"))
+  (-> (string/lower-case s)
+      (clojure.string/split #"\s+")))
 
 (s/defn build-partitions :- []
   [array size explode]
@@ -84,11 +86,11 @@
     (swap! classifier assoc :classes (:classes x))
     (println "loading complete.")))
 
-(defn repl-init
-  []
-  (use 'clj_naive_bayes.core :reload-all)
-  (use 'clj_naive_bayes.eval :reload-all)
-  (use 'clj_naive_bayes.train :reload-all)
-  (use 'clojure.tools.namespace.repl)
-  (require 'spyscope.core)
-  (require 'clojure.pprint))
+;; (defn repl-init
+;;   []
+;;   (use 'clj-naive-bayes.core :reload-all)
+;;   (use 'clj-naive-bayes.eval :reload-all)
+;;   (use 'clj-naive-bayes.train :reload-all)
+;;   (use 'clojure.tools.namespace.repl)
+;;   (require 'spyscope.core)
+;;   (require 'clojure.pprint))
