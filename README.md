@@ -6,9 +6,9 @@ First of all you will need a new classifier:
 
 ```clojure
 
-(use 'clj_naive_bayes.core)
+(require '[clj_naive_bayes.core :as nb])
 
-(def my-classifier (new-classifier {:name :ngram-nb :ngram-size 2 :ngram-type :multinomial}))
+(def my-classifier (nb/new-classifier {:name :ngram-nb :ngram-size 2 :ngram-type :multinomial}))
 
 ```
 
@@ -27,15 +27,15 @@ First of all you will need a new classifier:
 * __:keep-sorted__ : Boolean. (Default `false`). With this flag on all tokens
   in ngram keys are stores in alphabetical order.
 
-## Train
+## Training
 
-Suppose you have a trained dataset.
+Suppose you have a training dataset.
 
 ```clojure
 
 (use 'clj_naive_bayes.train)
 
-(parallel-train-from my-classifier "resources/train.csv" :limit 400000 0)
+(parallel-train-from my-classifier "resources/train.csv" :limit 400000)
 
 ```
 

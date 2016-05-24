@@ -1,4 +1,4 @@
-(ns clj-naive-bayes.core
+(ns clj-naive-bayes.naive-bayes
   (:require [clj-naive-bayes.protocols :as p]
             [clj-naive-bayes.classifiers.multinomial :as multinomial]
             [clj-naive-bayes.classifiers.bernoulli :as bernoulli]))
