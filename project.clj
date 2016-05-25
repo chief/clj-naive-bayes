@@ -7,6 +7,8 @@
                  [com.stuartsierra/component "0.3.1"]
                  [org.clojure/data.csv "0.1.3"]
                  [spyscope "0.1.5"]
-                 [prismatic/schema "1.0.4"]]
+                 [prismatic/schema "1.0.4"]
+                 [net.mikera/core.matrix "0.52.0"]
+                 [net.mikera/vectorz-clj "0.44.0"]]
   :jvm-opts ["-Xmx4g"]
   :plugins [[lein-marginalia "0.8.0"]])
