@@ -6,9 +6,9 @@ First of all you will need a new classifier:
 
 ```clojure
 
-(use 'clj_naive_bayes.core)
+(require '[clj_naive_bayes.core :as nb])
 
-(def my-classifier (new-classifier {:name :ngram-nb :ngram-size 2 :ngram-type :multinomial}))
+(def my-classifier (nb/new-classifier {:name :ngram-nb :ngram-size 2 :ngram-type :multinomial}))
 
 ```
 
@@ -29,14 +29,34 @@ First of all you will need a new classifier:
 
 ## Train
 
-Suppose you have a trained dataset.
+Suppose you have a training dataset:
 
 ```clojure
 
-(use 'clj_naive_bayes.train)
+(require '[clj_naive_bayes.train :as train])
 
-(parallel-train-from my-classifier "resources/train.csv" :limit 400000 0)
+(train/parallel-train-from my-classifier "resources/train.csv" :limit 400000)
 
+```
+
+## Classify
+
+Now we can try classifying a new document:
+
+```clojure
+(nb/classify my-classifier "iphone 6s")
+=> "40"
+```
+
+## Export Probabilities to a Hashmap
+
+This could be useful for e.g. persisting the classifier:
+
+```clojure
+(def out (nb/export a))
+=> #'user/out
+(keys out)
+=> (:terms :cats)
 ```
 
 ## Evaluate Performance
