@@ -1,5 +1,5 @@
 (defproject clj-naive-bayes "0.0.1-SNAPSHOT"
-  :description "Cool new project to do things and stuff"
+  :description "Naive bayes in Clojure!"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [cheshire "5.5.0"]
                  [org.clojure/core.memoize "0.5.8"]
@@ -9,4 +9,5 @@
                  [spyscope "0.1.5"]
                  [prismatic/schema "1.0.4"]]
   :jvm-opts ["-Xmx4g"]
-  :plugins [[lein-marginalia "0.8.0"]])
+  :plugins [[lein-marginalia "0.8.0"]
+            [lein-cljfmt "0.5.3"]])
