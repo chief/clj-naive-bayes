@@ -1,48 +1,54 @@
 (ns clj_naive_bayes.train
   (:use [clj_naive_bayes.core]
-        [clj_naive_bayes.utils]
         [clojure.java.io :only (reader)])
-  (:require  [clojure.data.csv :as csv]
-             [schema.core :as s]))
+  (:require [clj_naive_bayes.utils :as utils]
+            [clojure.data.csv :as csv]
+            [schema.core :as s]))
 
 (defn- train-class
-  [classes klass]
-  (if (get-in @classes [klass])
-    (swap! classes update-in [klass :n] inc)
-    (do
-      (swap! classes assoc-in [klass :n] 1)
-      (swap! classes assoc-in [klass :st] 0))))
+  ([classes klass]
+   (train-class classes klass 1))
+  ([classes klass occ]
+   (if (get-in @classes [klass])
+     (swap! classes update-in [klass :n] inc)
+     (do
+       (swap! classes assoc-in [klass :n] 1)
+       (swap! classes assoc-in [klass :st] 0)))))
 
 (defmulti train-document
   "Trains classifier with document"
-  (fn [classifier klass document] (get-in classifier [:algorithm :name])))
+  (fn [classifier & args] (get-in classifier [:algorithm :name])))
 
 (defmethod train-document :default
-  [classifier klass v]
-  (let [all (:all classifier) classes (:classes classifier)
-        tokens (:tokens classifier)]
-    (swap! all update-in [:n] inc)
+  ([classifier klass v]
+   (train-document classifier klass v 1))
+  ([classifier klass v occ]
+   (let [{:keys [all classes tokens]} classifier
+         inc-occ #(+ % occ)]
 
-    (if (nil? (get @all :st))
-      (swap! all assoc-in [:st] 0))
+     (swap! all update-in [:n] inc-occ)
 
-    (train-class classes klass)
+     (if (nil? (get @all :st))
+       (swap! all assoc-in [:st] 0))
 
-    (doseq [token v]
-      (if (get @tokens token)
-        (do
-          (swap! tokens update-in [token :all] inc)
-          (swap! all update-in [:st] inc)
-          (swap! classes update-in [klass :st] inc))
-        (do
-          (swap! all update-in [:st] inc)
-          (swap! classes update-in [klass :st] inc)
-          (swap! all update-in [:v] inc)
-          (swap! tokens assoc-in  [token :all] 1)))
+     ;; TODO: fixme
+     (train-class classes klass occ)
 
-      (if (get-in @tokens [token klass])
-        (swap! tokens update-in [token klass] inc)
-        (swap! tokens assoc-in [token  klass] 1)))))
+     (doseq [token v]
+       (if (get @tokens token)
+         (do
+           (swap! tokens update-in [token :all] inc-occ)
+           (swap! all update-in [:st] inc-occ)
+           (swap! classes update-in [klass :st] inc-occ))
+         (do
+           (swap! all update-in [:st] inc-occ)
+           (swap! classes update-in [klass :st] inc-occ)
+           (swap! all update-in [:v] inc-occ)
+           (swap! tokens assoc-in  [token :all] occ)))
+
+       (if (get-in @tokens [token klass])
+         (swap! tokens update-in [token klass] inc-occ)
+         (swap! tokens assoc-in [token  klass] occ))))))
 
 (defmethod train-document :multinomial-positional-nb
   [classifier klass v]
@@ -76,29 +82,31 @@
         (swap! tokens update-in [token klass position] inc)
         (swap! tokens assoc-in [token klass position] 1)))))
 
-(defn target
-  "Returns a target from a trained document. This documents should have its
-   target class at the end"
-  [document]
-  (peek document))
+(defn train-with-count [classifier documents]
+  (doseq [document documents]
+    (let [[d c o] document
+          features (utils/process-features classifier d)]
+      (train-document classifier c features (Integer/parseInt o)))))
 
-(defn features
-  "Gets all features except class (last element)."
-  [document]
-  (pop document))
+(defn train-single [classifier documents]
+  (doseq [document documents]
+    (let [[d c] document
+          algorithm (:algorithm classifier)
+          features (utils/process-features classifier d)]
+      (train-document classifier c features))))
 
 (defn train
-  [classifier with-documents]
-  (doseq [document with-documents]
-    (let [klass (target document)
-          algorithm (:algorithm classifier)
-          v (process-features classifier (features document))]
-      (train-document classifier klass v))))
+  [classifier documents]
+  ;; Sample the first document to infer number of fields in each row.
+  ;; TODO: Maybe use a multimethod here.
+  (let [field-count (count (first documents))]
+    (if (= field-count 3)
+      (train-with-count classifier documents)
+      (train-single classifier documents))))
 
 (defn parallel-train-from
   [classifier filename & {:keys [limit train-options]
                           :or {limit 100}}]
-  (with-open [in-file (reader filename)]
-    (let [with-documents (take limit (csv/read-csv in-file))]
-      (dorun
-       (pmap #(train classifier [%]) with-documents)))))
+  (let [data (take limit (utils/load-data filename))]
+    (dorun
+     (pmap #(train classifier [%]) data))))
