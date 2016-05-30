@@ -1,4 +1,4 @@
-(defproject clj-naive-bayes "0.0.1-SNAPSHOT"
+(defproject clj-naive-bayes "0.1.0"
   :description "Naive bayes in Clojure!"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [cheshire "5.5.0"]
