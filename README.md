@@ -29,13 +29,18 @@ First of all you will need a new classifier:
 
 ## Train
 
-Suppose you have a training dataset:
+Suppose you have a training dataset. This should be a CSV file, consisting of
+lines with `<document,class>` or `<document,class,count>` elements. In the
+second case, the `count` column should contain the number of occurences of each
+sample. This is purely for space-saving purposes, so e.g. instead of using five
+lines of the same `<document,class>` pair, a single `<document,class,5>` line
+can be used instead.
 
 ```clojure
 
 (require '[clj_naive_bayes.train :as train])
 
-(train/parallel-train-from my-classifier "resources/train.csv" :limit 400000)
+(train/parallel-train-from-file my-classifier "resources/train.csv" :limit 400000)
 
 ```
 
