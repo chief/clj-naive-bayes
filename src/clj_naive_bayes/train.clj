@@ -104,9 +104,15 @@
       (train-with-count classifier documents)
       (train-single classifier documents))))
 
-(defn parallel-train-from
-  [classifier filename & {:keys [limit train-options]
-                          :or {limit 100}}]
-  (let [data (take limit (utils/load-data filename))]
-    (dorun
-     (pmap #(train classifier [%]) data))))
+(defn parallel-train
+  ([classifier data]
+   (parallel-train classifier data {}))
+  ([classifier data {:keys [limit train-options] :or {limit 100}}]
+   (let [data (take limit data)]
+     (dorun
+      (pmap #(train classifier [%]) data)))))
+
+(defn parallel-train-from-file
+  [classifier filename options]
+  (let [data (utils/load-data-from-file filename)]
+    (parallel-train classifier data options)))
