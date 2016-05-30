@@ -11,12 +11,12 @@
         classifier (core/new-classifier)]
     (train/train classifier documents)
 
-    (is (= (core/condprob classifier "Chinese" "China") 3/7))
-    (is (= (core/condprob classifier "Tokyo" "China") 1/14))
-    (is (= (core/condprob classifier "Japan" "China") 1/14))
-    (is (= (core/condprob classifier "Chinese" "Japan") 2/9))
-    (is (= (core/condprob classifier "Tokyo" "Japan") 2/9))
-    (is (= (core/condprob classifier "Japan" "Japan") 2/9))
+    (is (= (core/condprob classifier "chinese" "China") 3/7))
+    (is (= (core/condprob classifier "tokyo" "China") 1/14))
+    (is (= (core/condprob classifier "japan" "China") 1/14))
+    (is (= (core/condprob classifier "chinese" "Japan") 2/9))
+    (is (= (core/condprob classifier "tokyo" "Japan") 2/9))
+    (is (= (core/condprob classifier "japan" "Japan") 2/9))
     (is (= (core/B classifier) 6))
     (is (= (core/classify classifier ["Chinese"]) "China"))
     (is (= (core/classify classifier []) "China"))))
@@ -29,12 +29,12 @@
         classifier (core/new-classifier {:name :bernoulli})]
     (train/train classifier documents)
 
-    (is (= (core/condprob classifier "Chinese" "China") 4/5))
-    (is (= (core/condprob classifier "Tokyo" "China") 1/5))
-    (is (= (core/condprob classifier "Japan" "China") 1/5))
-    (is (= (core/condprob classifier "Chinese" "Japan") 2/3))
-    (is (= (core/condprob classifier "Tokyo" "Japan") 2/3))
-    (is (= (core/condprob classifier "Japan" "Japan") 2/3))
+    (is (= (core/condprob classifier "chinese" "China") 4/5))
+    (is (= (core/condprob classifier "tokyo" "China") 1/5))
+    (is (= (core/condprob classifier "japan" "China") 1/5))
+    (is (= (core/condprob classifier "chinese" "Japan") 2/3))
+    (is (= (core/condprob classifier "tokyo" "Japan") 2/3))
+    (is (= (core/condprob classifier "japan" "Japan") 2/3))
     (is (= (core/classify classifier ["Chinese"]) "China"))
     (is (= (core/classify classifier []) "China"))))
 
@@ -45,4 +45,5 @@
                    ["Tokyo Japan Chinese" "Japan"]]
         classifier (core/new-classifier {:name :multinomial-nb})]
     (train/train classifier documents)
-    (is (= (core/score classifier ["Chinese"] "China") -1.1349799328389845))))
+
+    (is (= (core/score classifier ["chinese"] "China") -1.1349799328389845))))

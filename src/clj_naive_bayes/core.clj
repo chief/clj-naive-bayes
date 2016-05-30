@@ -9,11 +9,11 @@
      ~@body))
 
 (s/defrecord Classifier
-    [all :- s/atom
-     classes :- s/atom
-     algorithm :- {}
-     tokens :- s/atom
-     score :- s/atom])
+             [all :- s/atom
+              classes :- s/atom
+              algorithm :- {}
+              tokens :- s/atom
+              score :- s/atom])
 
 (defn new-classifier
   ([]
@@ -54,12 +54,15 @@
 
 (defmulti condprob
   "Calculates the conditional propability of token t for class c"
-  (fn [classifier t c] (get-in classifier [:algorithm :name])))
+  (fn [classifier & args] (get-in classifier [:algorithm :name])))
 
 (defmethod condprob :default
-  [classifier t c]
-  (/ (inc (Tct classifier t c))
-     (+ (NTct classifier c) (B classifier))))
+  ([classifier c]
+   (/ 1
+      (+ (NTct classifier c) (B classifier))))
+  ([classifier t c]
+   (/ (inc (Tct classifier t c))
+      (+ (NTct classifier c) (B classifier)))))
 
 (defmethod condprob :bernoulli
   [classifier t c]
@@ -117,6 +120,21 @@
                 #(- (Math/log (condprob classifier % klass))
                     (Math/log (cnb-condprob classifier % klass))) tokens))))
 
+(defmulti export
+  (fn [classifier] (get-in classifier [:algorithm :name])))
+
+;; TODO: this only works for multinomial at the moment.
+(defmethod export :default
+  [classifier]
+  {:terms (for [[t cats] @(:tokens classifier)
+                [cid _] cats
+                :when (not (= :all cid))]
+            [t cid (Math/log (condprob classifier t cid))])
+   :cats (map (fn [c] [c
+                       (Math/log (prior classifier c))
+                       (Math/log (condprob classifier c))])
+              (keys @(:classes classifier)))})
+
 (defn apply-nb
   [classifier document]
   (let [classes (classifier-classes classifier)
@@ -127,6 +145,12 @@
   [classifier document]
   ((first (sort-by val > (apply-nb classifier document))) 0))
 
+(defn best-n-classes
+  [classifier document n]
+  (take n (sort-by val > (apply-nb classifier document))))
+
 (defn debug-classify
-  [classifier document]
-  (sort-by val > (apply-nb classifier document)))
+  ([classifier document]
+   (sort-by val > (apply-nb classifier document)))
+  ([classifier document n]
+   (take n (sort-by val > (apply-nb classifier document)))))

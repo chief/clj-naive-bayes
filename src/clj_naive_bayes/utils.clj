@@ -3,6 +3,7 @@
   (:require [cheshire.core :refer :all]
             [clojure.data.csv :as csv]
             [clojure.edn :as edn]
+            [clojure.string :as string]
             [schema.core :as s]))
 
 (defn load-data
@@ -14,7 +15,8 @@
 (defn tokenize
   "Returns a tokenized string"
   [s]
-  (clojure.string/split s #"\s+"))
+  (-> (string/lower-case s)
+      (clojure.string/split #"\s+")))
 
 (s/defn build-partitions :- []
   [array size explode]
@@ -39,31 +41,27 @@
 
 (s/defmethod process-features :multinomial-nb :- []
   [classifier features]
-  (flatten (map tokenize features)))
+  (tokenize features))
 
 (s/defmethod process-features :multinomial-positional-nb
   [classifier features]
-  (map-indexed (fn [idx itm] [itm idx]) (flatten (map tokenize features))))
+  (map-indexed (fn [idx itm] [itm idx]) (tokenize features)))
 
 (defmethod process-features :binary-nb
   [classifier features]
-  (flatten (map #(distinct (tokenize %)) features)))
+  (distinct (tokenize features)))
 
 (defmethod process-features :bernoulli
   [classifier features]
-  (->> features
-       (map tokenize)
-       flatten
-       distinct))
+  (distinct (tokenize features)))
 
 (defmethod process-features :ngram-nb
   [classifier features]
   (let [ngram-size (get-in classifier [:algorithm :ngram-size] 2)
         ngram-type (get-in classifier [:algorithm :ngram-type] :multinomial)
         explode-ngrams (get-in classifier [:algorithm :explode-ngrams] false)]
-    (->> features
-         (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
-                           :explode-ngrams explode-ngrams)))))
+    (map #(ngram-keys (tokenize %) :size ngram-size :type ngram-type
+                      :explode-ngrams explode-ngrams) features)))
 
 (defn persist-classifier
   [classifier filename]
