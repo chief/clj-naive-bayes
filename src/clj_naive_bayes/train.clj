@@ -86,7 +86,7 @@
   (doseq [document documents]
     (let [[d c o] document
           features (utils/process-features classifier d)]
-      (train-document classifier c features (Integer/parseInt o)))))
+      (train-document classifier c features o))))
 
 (defn train-single [classifier documents]
   (doseq [document documents]

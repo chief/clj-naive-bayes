@@ -1,16 +1,23 @@
 (ns clj_naive_bayes.utils
-  (:use [clojure.java.io :only (reader)])
-  (:require [cheshire.core :refer :all]
+  (:require [clojure.java.io :as io]
+            [cheshire.core :refer :all]
             [clojure.data.csv :as csv]
             [clojure.edn :as edn]
             [clojure.string :as string]
             [schema.core :as s]))
 
-(defn load-data
-  [filename]
-  (with-open [in-file (reader filename)]
+(defn load-csv-file [filename]
+  (with-open [in-file (io/reader filename)]
     (doall
      (csv/read-csv in-file))))
+
+(defn load-data-from-file
+  [filename]
+  (let [data (load-csv-file filename)]
+    (map (fn [line]
+           (if (= (count line) 3)
+             [(first line) (second line) (Integer/parseInt (nth line 2))]
+             line)) data)))
 
 (defn tokenize
   "Returns a tokenized string"
