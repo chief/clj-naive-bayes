@@ -107,7 +107,7 @@
 (defn parallel-train
   ([classifier data]
    (parallel-train classifier data {}))
-  ([classifier data {:keys [limit train-options] :or {limit 100}}]
+  ([classifier data {:keys [limit train-options] :or {limit (count data)}}]
    (let [data (take limit data)]
      (dorun
       (pmap #(train classifier [%]) data)))))
