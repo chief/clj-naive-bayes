@@ -1,5 +1,7 @@
 # clj-naive-bayes
 
+_Warning_: This project is under heavy development. Things will break!
+
 ## Usage
 
 First of all you will need a new classifier:
