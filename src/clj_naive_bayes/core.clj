@@ -120,20 +120,40 @@
                 #(- (Math/log (condprob classifier % klass))
                     (Math/log (cnb-condprob classifier % klass))) tokens))))
 
-(defmulti export
-  (fn [classifier] (get-in classifier [:algorithm :name])))
+(defn export-multinomial-nested [classifier]
+  {:tokens (apply merge-with merge
+                  (for [[t cats] @(:tokens classifier)
+                        [cid _] cats
+                        :when (not (= :all cid))]
+                    {t {cid (Math/log (condprob classifier t cid))}}))
+   :classes (reduce (fn [coll cid]
+                      (assoc coll cid
+                             {:prior (Math/log (prior classifier cid))
+                              :flat-prior (Math/log (condprob classifier cid))}))
+                    {} (keys @(:classes classifier)))})
+
+;; TODO: Use this to export to CSV file (and maybe create a helper
+;; export-to-file function.
+(defn export-multinomial-flat  [classifier]
+  {:tokens (for [[t cats] @(:tokens classifier)
+                 [cid _] cats
+                 :when (not (= :all cid))]
+             [t cid (Math/log (condprob classifier t cid))])
+   :classes (map (fn [c] [c
+                          (Math/log (prior classifier c))
+                          (Math/log (condprob classifier c))])
+                 (keys @(:classes classifier)))})
 
 ;; TODO: this only works for multinomial at the moment.
+(defmulti export
+  (fn [classifier output] (get-in classifier [:algorithm :name])))
+
 (defmethod export :default
-  [classifier]
-  {:terms (for [[t cats] @(:tokens classifier)
-                [cid _] cats
-                :when (not (= :all cid))]
-            [t cid (Math/log (condprob classifier t cid))])
-   :cats (map (fn [c] [c
-                       (Math/log (prior classifier c))
-                       (Math/log (condprob classifier c))])
-              (keys @(:classes classifier)))})
+  [classifier output]
+  (condp = output
+    :nested (export-multinomial-nested classifier)
+    :flat (export-multinomial-flat classifier)
+    (export-multinomial-nested classifier)))
 
 (defn apply-nb
   [classifier document]
