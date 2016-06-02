@@ -122,7 +122,7 @@
 
 (defn export-multinomial-nested [classifier]
   {:tokens (apply merge-with merge
-                  (for [[t cats] @(:tokens classifier)
+                  (for [[t cats] (:tokens @(:data classifier))
                         [cid _] cats
                         :when (not (= :all cid))]
                     {t {cid (Math/log (condprob classifier t cid))}}))
@@ -130,19 +130,19 @@
                       (assoc coll cid
                              {:prior (Math/log (prior classifier cid))
                               :flat-prior (Math/log (condprob classifier cid))}))
-                    {} (keys @(:classes classifier)))})
+                    {} (classifier-classes classifier))})
 
 ;; TODO: Use this to export to CSV file (and maybe create a helper
 ;; export-to-file function.
 (defn export-multinomial-flat  [classifier]
-  {:tokens (for [[t cats] @(:tokens classifier)
+  {:tokens (for [[t cats] (:tokens @(:data classifier))
                  [cid _] cats
                  :when (not (= :all cid))]
              [t cid (Math/log (condprob classifier t cid))])
    :classes (map (fn [c] [c
                           (Math/log (prior classifier c))
                           (Math/log (condprob classifier c))])
-                 (keys @(:classes classifier)))})
+                 (classifier-classes classifier))})
 
 ;; TODO: this only works for multinomial at the moment.
 (defmulti export
