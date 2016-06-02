@@ -8,29 +8,29 @@
   `(binding [classifier ~classifier]
      ~@body))
 
-(s/defrecord Classifier
-             [all :- s/atom
-              classes :- s/atom
-              algorithm :- {}
-              tokens :- s/atom
-              score :- s/atom])
+(s/defrecord Classifier [algorithm :- {}
+                         data :- s/atom
+                         score])
 
 (defn new-classifier
   ([]
    (new-classifier {:name :multinomial-nb}))
   ([algorithm]
-   (->Classifier (atom {:n 0 :v 0}) (atom {})  algorithm
-                 (atom {}) (atom :naive-bayes))))
+   (->Classifier algorithm
+                 (atom {:all {:n 0 :v 0}
+                        :classes {}
+                        :tokens {}})
+                 :naive-bayes)))
 
 (defn Nc
   "Gets total documents of class c"
   [classifier c]
-  (get-in @(:classes classifier) [c :n] 0))
+  (get-in @(:data classifier) [:classes c :n] 0))
 
 (defn N
   "Gets total documents for all classes"
   [classifier]
-  (get-in @(:all classifier) [:n]))
+  (get-in @(:data classifier) [:all :n]))
 
 (defn prior
   "Calculates the prior propability of class c"
@@ -40,17 +40,17 @@
 (s/defn Tct :- s/Num
   "The number of occurrences of t in training documents from class c"
   [classifier t c]
-  (get-in @(:tokens classifier) [t c] 0))
+  (get-in @(:data classifier) [:tokens t c] 0))
 
 (s/defn NTct :- s/Num
   "Gets total token occurrences for a class c"
   [classifier c]
-  (get-in @(:classes classifier) [c :st] 0))
+  (get-in @(:data classifier) [:classes c :st] 0))
 
 (s/defn B :- s/Num
   "or |V| is the number of terms in the vocabulary"
   [classifier]
-  (get-in @(:all classifier) [:v] 0))
+  (get-in @(:data classifier) [:all :v] 0))
 
 (defmulti condprob
   "Calculates the conditional propability of token t for class c"
@@ -98,10 +98,10 @@
 (defn classifier-classes
   "Gets all classes"
   [classifier]
-  (keys @(:classes classifier)))
+  (keys (:classes @(:data classifier))))
 
 (defmulti score
-  (fn [classifier tokens klass] @(get classifier :score)))
+  (fn [classifier tokens klass] (:score classifier)))
 
 (defmethod score :default
   [classifier tokens klass]
