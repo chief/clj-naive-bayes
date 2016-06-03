@@ -12,6 +12,19 @@
                          data :- s/atom
                          score])
 
+;; Data representation:
+;; --------------------
+;; all:
+;;   n: document count
+;;   v: unique token count
+;;   st: raw token count (including duplicates)
+;; tokens:
+;;   all: raw token count (including duplicates)
+;;   class_name: times token was observed in this class (including duplicates)
+;; classes:
+;;   n: documents in that class
+;;   st: raw token count in that class (including duplicates)
+
 (defn new-classifier
   ([]
    (new-classifier {:name :multinomial-nb}))
@@ -72,7 +85,7 @@
 (s/defn Nt :- s/Num
   "Gets the occurences of token t in all classes"
   [classifier t]
-  (get-in @(:tokens classifier) [t :all] 0))
+  (get-in @(:data classifier) [:tokens t :all] 0))
 
 (s/defn NCt :- s/Num
   "Gets the occurences of token t in all classes except c"
@@ -82,7 +95,7 @@
 (s/defn Nst :- s/Num
   "Gets total token occurences for a classifier"
   [classifier]
-  (get-in @(:all classifier) [:st] 0))
+  (get-in @(:data classifier) [:all :st] 0))
 
 (s/defn NC :- s/Num
   "Gets total number of token occurrences in classes other than c"
