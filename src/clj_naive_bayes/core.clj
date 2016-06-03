@@ -12,6 +12,19 @@
                          data :- s/atom
                          score])
 
+;; Data representation:
+;; --------------------
+;; all:
+;;   n: document count
+;;   v: unique token count
+;;   st: raw token count (including duplicates)
+;; tokens:
+;;   all: raw token count (including duplicates)
+;;   class_name: times token was observed in this class (including duplicates)
+;; classes:
+;;   n: documents in that class
+;;   st: raw token count in that class (including duplicates)
+
 (defn new-classifier
   ([]
    (new-classifier {:name :multinomial-nb}))
