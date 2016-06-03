@@ -3,15 +3,6 @@
             [clojure.data.csv :as csv]
             [schema.core :as s]))
 
-(defn- update-classes-multinomial
-  ([classes klass]
-   (update-classes-multinomial classes klass 1))
-  ([classes klass occ]
-   (if (get classes klass)
-     (update-in classes [klass :n] inc)
-     (-> (assoc-in classes [klass :n] 1)
-         (assoc-in [klass :st] 0)))))
-
 (defn- update-all-for-token-multinomial [all tokens token f]
   (if (get tokens token)
     (update all :st f)
@@ -33,15 +24,14 @@
    (train-document data algorithm klass features 1))
   ([data algorithm klass features occ]
    (let [inc-occ #(+ (or % 0) occ)
-         pre (update data :classes update-classes-multinomial klass occ)
-         d (reduce (fn [{:keys [all classes tokens]} token]
-                     {:all (update-all-for-token-multinomial all tokens token inc-occ)
-                      :tokens (-> (update-in tokens [token :all] inc-occ)
-                                  (update-in [token klass] inc-occ))
-                      :classes (update-in classes [klass :st] inc-occ)})
-                   pre features)]
-     (-> (update-in d [:all :st] #(or % 0))
-         (update-in [:all :n] inc-occ)))))
+         pre (-> (update-in data [:classes klass :n] inc-occ)
+                 (update-in [:all :n] inc-occ))]
+     (reduce (fn [{:keys [all classes tokens]} token]
+               {:all (update-all-for-token-multinomial all tokens token inc-occ)
+                :tokens (-> (update-in tokens [token :all] inc-occ)
+                            (update-in [token klass] inc-occ))
+                :classes (update-in classes [klass :st] inc-occ)})
+             pre features))))
 
 (defmethod train-document :multinomial-positional-nb
   ([data algorithm klass features]
