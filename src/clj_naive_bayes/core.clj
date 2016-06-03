@@ -72,7 +72,7 @@
 (s/defn Nt :- s/Num
   "Gets the occurences of token t in all classes"
   [classifier t]
-  (get-in @(:tokens classifier) [t :all] 0))
+  (get-in @(:data classifier) [:tokens t :all] 0))
 
 (s/defn NCt :- s/Num
   "Gets the occurences of token t in all classes except c"
@@ -82,7 +82,7 @@
 (s/defn Nst :- s/Num
   "Gets total token occurences for a classifier"
   [classifier]
-  (get-in @(:all classifier) [:st] 0))
+  (get-in @(:data classifier) [:all :st] 0))
 
 (s/defn NC :- s/Num
   "Gets total number of token occurrences in classes other than c"
