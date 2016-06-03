@@ -11,3 +11,6 @@ docs/
 .nrepl-port
 resources/config.edn
 *.log
+
+# Ignore data
+data/
