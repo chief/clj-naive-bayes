@@ -26,7 +26,7 @@
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
-        classifier (core/new-classifier {:name :bernoulli})]
+        classifier (core/new-classifier {:name :bernoulli} :default)]
     (train/train classifier documents)
 
     (is (= (core/condprob classifier "chinese" "China") 4/5))
@@ -43,7 +43,7 @@
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
-        classifier (core/new-classifier {:name :multinomial-nb})]
+        classifier (core/new-classifier {:name :multinomial-nb} :default)]
     (train/train classifier documents)
 
     (is (= (core/score classifier ["chinese"] "China") -1.1349799328389845))))

@@ -48,7 +48,7 @@
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
-        classifier (core/new-classifier {:name :multinomial-positional-nb})
+        classifier (core/new-classifier {:name :multinomial-positional-nb} :default)
         do-train (train/train classifier documents)
         data @(:data classifier)
         all (:all data)
@@ -68,7 +68,7 @@
                    ["Chinese Chinese Shanghai" "China"]
                    ["Chinese Macao" "China"]
                    ["Tokyo Japan Chinese" "Japan"]]
-        classifier (core/new-classifier {:name :binary-nb})
+        classifier (core/new-classifier {:name :binary-nb} :default)
         do-train (train/train classifier documents)
         data @(:data classifier)
         all (:all data)

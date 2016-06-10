@@ -27,13 +27,13 @@
 
 (defn new-classifier
   ([]
-   (new-classifier {:name :multinomial-nb}))
-  ([algorithm]
+   (new-classifier {:name :multinomial-nb} :default))
+  ([algorithm score]
    (->Classifier algorithm
                  (atom {:all {:n 0 :v 0}
                         :classes {}
                         :tokens {}})
-                 :naive-bayes)))
+                 score)))
 
 (defn Nc
   "Gets total documents of class c"
