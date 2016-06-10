@@ -128,7 +128,8 @@
 
 (defmethod score :one-versus-all-but-one
   [classifier tokens klass]
-  (+ (Math/log (prior classifier klass))
+  (+ (- (Math/log (prior classifier klass))
+        (Math/log (- 1 (prior classifier klass))))
      (reduce + (map
                 #(- (Math/log (condprob classifier % klass))
                     (Math/log (cnb-condprob classifier % klass))) tokens))))
