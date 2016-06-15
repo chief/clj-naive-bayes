@@ -169,22 +169,17 @@
     :flat (export-multinomial-flat classifier)
     (export-multinomial-nested classifier)))
 
-(defn apply-nb
+(defn score-document
   [classifier document]
   (let [classes (classifier-classes classifier)
         tokens (utils/process-features classifier document)]
-    (reduce into {} (map #(hash-map % (score classifier tokens %)) classes))))
+    (map (fn [c] [c (score classifier tokens c)]) classes)))
 
-(defn classify
-  [classifier document]
-  ((first (sort-by val > (apply-nb classifier document))) 0))
+(defn classify [classifier document]
+  (first (apply max-key second (score-document classifier document))))
 
-(defn best-n-classes
-  [classifier document n]
-  (take n (sort-by val > (apply-nb classifier document))))
-
-(defn debug-classify
-  ([classifier document]
-   (sort-by val > (apply-nb classifier document)))
-  ([classifier document n]
-   (take n (sort-by val > (apply-nb classifier document)))))
+(defn top-classes [classifier document n threshold]
+  (->> (score-document classifier document)
+       (remove #(< (second %) threshold))
+       (sort-by second >)
+       (take n)))
